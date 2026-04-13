@@ -1,0 +1,21 @@
+# Ambiente e segredos
+.env
+.env.*
+*.pem
+*.key
+
+# IDEs e editores
+.vscode/
+.idea/
+*.sw?
+*.suo
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# OS
+*.log
+tmp/
+temp/
