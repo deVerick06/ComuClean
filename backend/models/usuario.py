@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from models.denuncia import Denuncia
     from models.validacao import Validacao
+    from models.resgate import Resgate
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -21,3 +22,4 @@ class Usuario(Base):
 
     denuncias: Mapped[list["Denuncia"]] = relationship(back_populates="usuario")
     validacoes: Mapped[list["Validacao"]] = relationship(back_populates="usuario")
+    resgates: Mapped[list["Resgate"]] = relationship(back_populates="usuario")

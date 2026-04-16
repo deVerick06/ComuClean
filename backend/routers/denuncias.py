@@ -17,6 +17,9 @@ router = APIRouter(tags=["Denúncias"])
 
 UPLOAD_DIR = "uploads"
 LIMITE_DIARIO_DENUNCIAS = 5
+PONTOS_POR_DENUNCIA_CRIADA = 5
+EXTENSOES_PERMITIDAS = {".jpg", ".jpeg", ".png", ".webp"}
+MAX_TAMANHO_ARQUIVO = 5 * 1024 * 1024  # 5MB
 
 
 @router.post("/denuncias", response_model=DenunciaResponse, status_code=status.HTTP_201_CREATED)
@@ -47,6 +50,10 @@ async def criar_denuncia(
         descricao=dados.descricao,
     )
     db.add(denuncia)
+
+    # Gamificacao: +5 pontos por criar denuncia
+    usuario.pontos += PONTOS_POR_DENUNCIA_CRIADA
+
     await db.commit()
     await db.refresh(denuncia)
     return denuncia
@@ -153,13 +160,21 @@ async def upload_imagem(
     if not denuncia:
         raise HTTPException(status_code=404, detail="Denúncia não encontrada")
 
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    if denuncia.usuario_id != usuario.id:
+        raise HTTPException(status_code=403, detail="Sem permissao para adicionar imagens nesta denuncia")
 
-    ext = os.path.splitext(arquivo.filename or "img.jpg")[1]
+    ext = os.path.splitext(arquivo.filename or "img.jpg")[1].lower()
+    if ext not in EXTENSOES_PERMITIDAS:
+        raise HTTPException(status_code=400, detail="Tipo de arquivo nao permitido. Use: jpg, png ou webp")
+
+    conteudo = await arquivo.read()
+    if len(conteudo) > MAX_TAMANHO_ARQUIVO:
+        raise HTTPException(status_code=413, detail="Arquivo muito grande. Maximo: 5MB")
+
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
     nome_arquivo = f"{uuid.uuid4().hex}{ext}"
     caminho = os.path.join(UPLOAD_DIR, nome_arquivo)
 
-    conteudo = await arquivo.read()
     with open(caminho, "wb") as f:
         f.write(conteudo)
 

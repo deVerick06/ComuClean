@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 var(--space-md);
+  padding: 0 var(--space-sm);
   z-index: 1000;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 }
@@ -19,12 +19,13 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-tertiary);
   text-decoration: none;
   transition: color 0.15s ease;
-  padding: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  min-width: 0;
 }
 
 .nav-item.active {

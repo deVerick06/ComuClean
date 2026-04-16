@@ -12,7 +12,6 @@ class ValidacaoCreate(BaseModel):
 
 class ValidacaoResponse(BaseModel):
     id: int
-    usuario_id: int
     denuncia_id: int
     tipo_validacao: str
     imagem_url: str | None

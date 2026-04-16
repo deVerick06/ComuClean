@@ -20,18 +20,23 @@ export default function Perfil() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
   const [denuncias, setDenuncias] = useState([]);
+  const [resgates, setResgates] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    carregarMinhasDenuncias();
+    carregarDados();
   }, []);
 
-  async function carregarMinhasDenuncias() {
+  async function carregarDados() {
     try {
-      const { data } = await api.get('/usuarios/me/denuncias');
-      setDenuncias(data);
+      const [denRes, resRes] = await Promise.all([
+        api.get('/usuarios/me/denuncias'),
+        api.get('/usuarios/me/resgates'),
+      ]);
+      setDenuncias(denRes.data);
+      setResgates(resRes.data);
     } catch (err) {
-      console.error('Erro ao carregar denuncias:', err);
+      console.error('Erro ao carregar dados:', err);
     } finally {
       setLoading(false);
     }
@@ -95,6 +100,32 @@ export default function Perfil() {
                 {d.descricao && <p className="perfil-denuncia-desc">{d.descricao}</p>}
                 <span className="perfil-denuncia-date">
                   {new Date(d.criada_em).toLocaleDateString('pt-BR')}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="perfil-section">
+        <h2>Meus resgates</h2>
+
+        {loading ? (
+          <p className="perfil-loading">Carregando...</p>
+        ) : resgates.length === 0 ? (
+          <div className="perfil-empty card">
+            <p>Voce ainda nao resgatou nenhuma recompensa</p>
+          </div>
+        ) : (
+          <div className="perfil-list">
+            {resgates.map((r) => (
+              <div key={r.id} className="card perfil-resgate">
+                <div className="perfil-resgate-top">
+                  <span className="perfil-resgate-nome">{r.recompensa_nome}</span>
+                  <span className="badge badge-resolvida">-{r.pontos_gastos} pts</span>
+                </div>
+                <span className="perfil-denuncia-date">
+                  {new Date(r.resgatado_em).toLocaleDateString('pt-BR')}
                 </span>
               </div>
             ))}

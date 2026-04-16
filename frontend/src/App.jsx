@@ -6,6 +6,8 @@ import Cadastro from './pages/Cadastro';
 import Home from './pages/Home';
 import NovaDenuncia from './pages/NovaDenuncia';
 import Perfil from './pages/Perfil';
+import Ranking from './pages/Ranking';
+import Recompensas from './pages/Recompensas';
 import './styles/global.css';
 
 function RotaProtegida() {
@@ -55,6 +57,8 @@ export default function App() {
           <Route element={<RotaProtegida />}>
             <Route path="/" element={<Home />} />
             <Route path="/denunciar" element={<NovaDenuncia />} />
+            <Route path="/ranking" element={<Ranking />} />
+            <Route path="/recompensas" element={<Recompensas />} />
             <Route path="/perfil" element={<Perfil />} />
           </Route>
 

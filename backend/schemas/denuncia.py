@@ -28,7 +28,6 @@ class DenunciaStatusUpdate(BaseModel):
 
 class DenunciaAdminResponse(BaseModel):
     id: int
-    usuario_id: int
     tipo_lixo: str
     latitude: float
     longitude: float

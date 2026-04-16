@@ -28,3 +28,9 @@ class UsuarioResponse(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class UsuarioRankingResponse(BaseModel):
+    posicao: int
+    nome: str
+    pontos: int

@@ -5,6 +5,8 @@ from models.usuario import Usuario
 from models.denuncia import Denuncia
 from models.imagem import Imagem
 from models.validacao import Validacao
+from models.recompensa import Recompensa
+from models.resgate import Resgate
 
 async def init_db():
     async with engine.begin() as conn:

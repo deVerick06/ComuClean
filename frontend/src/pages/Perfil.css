@@ -115,3 +115,20 @@
   font-size: 0.75rem;
   color: var(--text-tertiary);
 }
+
+.perfil-resgate {
+  padding: var(--space-md);
+}
+
+.perfil-resgate-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.perfil-resgate-nome {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}

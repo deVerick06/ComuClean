@@ -7,8 +7,11 @@ from core.security import hash_senha, verificar_senha, criar_token
 from core.deps import get_current_user
 from models.usuario import Usuario
 from models.denuncia import Denuncia
+from models.resgate import Resgate
+from models.recompensa import Recompensa
 from schemas.usuario import UsuarioCreate, UsuarioLogin, UsuarioResponse, TokenResponse
 from schemas.denuncia import DenunciaResponse
+from schemas.resgate import ResgateResponse
 
 router = APIRouter(tags=["Usuários"])
 
@@ -64,3 +67,26 @@ async def minhas_denuncias(
         .order_by(Denuncia.criada_em.desc())
     )
     return result.scalars().all()
+
+
+@router.get("/usuarios/me/resgates", response_model=list[ResgateResponse])
+async def meus_resgates(
+    usuario: Usuario = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Resgate, Recompensa.nome)
+        .join(Recompensa, Resgate.recompensa_id == Recompensa.id)
+        .where(Resgate.usuario_id == usuario.id)
+        .order_by(Resgate.resgatado_em.desc())
+    )
+    return [
+        ResgateResponse(
+            id=row[0].id,
+            recompensa_id=row[0].recompensa_id,
+            pontos_gastos=row[0].pontos_gastos,
+            resgatado_em=row[0].resgatado_em,
+            recompensa_nome=row[1],
+        )
+        for row in result.all()
+    ]

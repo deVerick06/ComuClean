@@ -15,7 +15,10 @@ router = APIRouter(tags=["Validacoes"])
 
 VOTOS_PARA_RESOLVER = 3
 PONTOS_POR_DENUNCIA_RESOLVIDA = 10
+PONTOS_POR_VALIDACAO = 2
 UPLOAD_DIR = "uploads"
+EXTENSOES_PERMITIDAS = {".jpg", ".jpeg", ".png", ".webp"}
+MAX_TAMANHO_ARQUIVO = 5 * 1024 * 1024  # 5MB
 
 
 @router.post("/validacoes", response_model=ValidacaoResponse, status_code=status.HTTP_201_CREATED)
@@ -58,7 +61,7 @@ async def criar_validacao(
         if distancia > RAIO_MAXIMO_METROS:
             raise HTTPException(
                 status_code=400,
-                detail=f"Voce precisa estar a no maximo {RAIO_MAXIMO_METROS}m do local ({distancia:.0f}m detectados)",
+                detail="Voce precisa estar mais proximo do local da denuncia para validar",
             )
 
     validacao = Validacao(
@@ -69,6 +72,9 @@ async def criar_validacao(
         longitude=dados.longitude,
     )
     db.add(validacao)
+
+    # Gamificacao: +2 pontos por validar denuncia de outro usuario
+    usuario.pontos += PONTOS_POR_VALIDACAO
 
     # Regra: 3 votos "ja_limpo" → resolve + credita pontos
     if dados.tipo_validacao == "ja_limpo":
@@ -113,12 +119,18 @@ async def upload_prova(
     if validacao.usuario_id != usuario.id:
         raise HTTPException(status_code=403, detail="Sem permissao")
 
+    ext = os.path.splitext(arquivo.filename or "img.jpg")[1].lower()
+    if ext not in EXTENSOES_PERMITIDAS:
+        raise HTTPException(status_code=400, detail="Tipo de arquivo nao permitido. Use: jpg, png ou webp")
+
+    conteudo = await arquivo.read()
+    if len(conteudo) > MAX_TAMANHO_ARQUIVO:
+        raise HTTPException(status_code=413, detail="Arquivo muito grande. Maximo: 5MB")
+
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    ext = os.path.splitext(arquivo.filename or "img.jpg")[1]
     nome = f"prova_{uuid.uuid4().hex}{ext}"
     caminho = os.path.join(UPLOAD_DIR, nome)
 
-    conteudo = await arquivo.read()
     with open(caminho, "wb") as f:
         f.write(conteudo)
 
