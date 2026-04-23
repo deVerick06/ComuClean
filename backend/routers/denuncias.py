@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import date, datetime
 from core.database import get_db
 from core.deps import get_current_user, get_admin_user
+from core.uploads import validar_imagem
 from models.usuario import Usuario
 from models.denuncia import Denuncia
 from models.imagem import Imagem
@@ -18,8 +19,6 @@ router = APIRouter(tags=["Denúncias"])
 UPLOAD_DIR = "uploads"
 LIMITE_DIARIO_DENUNCIAS = 5
 PONTOS_POR_DENUNCIA_CRIADA = 5
-EXTENSOES_PERMITIDAS = {".jpg", ".jpeg", ".png", ".webp"}
-MAX_TAMANHO_ARQUIVO = 5 * 1024 * 1024  # 5MB
 
 
 @router.post("/denuncias", response_model=DenunciaResponse, status_code=status.HTTP_201_CREATED)
@@ -164,12 +163,8 @@ async def upload_imagem(
         raise HTTPException(status_code=403, detail="Sem permissao para adicionar imagens nesta denuncia")
 
     ext = os.path.splitext(arquivo.filename or "img.jpg")[1].lower()
-    if ext not in EXTENSOES_PERMITIDAS:
-        raise HTTPException(status_code=400, detail="Tipo de arquivo nao permitido. Use: jpg, png ou webp")
-
     conteudo = await arquivo.read()
-    if len(conteudo) > MAX_TAMANHO_ARQUIVO:
-        raise HTTPException(status_code=413, detail="Arquivo muito grande. Maximo: 5MB")
+    validar_imagem(conteudo, ext)
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     nome_arquivo = f"{uuid.uuid4().hex}{ext}"

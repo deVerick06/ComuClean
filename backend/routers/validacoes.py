@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from core.deps import get_current_user
 from core.geo import haversine, RAIO_MAXIMO_METROS
+from core.uploads import validar_imagem
 from models.usuario import Usuario
 from models.denuncia import Denuncia
 from models.validacao import Validacao
@@ -17,8 +18,6 @@ VOTOS_PARA_RESOLVER = 3
 PONTOS_POR_DENUNCIA_RESOLVIDA = 10
 PONTOS_POR_VALIDACAO = 2
 UPLOAD_DIR = "uploads"
-EXTENSOES_PERMITIDAS = {".jpg", ".jpeg", ".png", ".webp"}
-MAX_TAMANHO_ARQUIVO = 5 * 1024 * 1024  # 5MB
 
 
 @router.post("/validacoes", response_model=ValidacaoResponse, status_code=status.HTTP_201_CREATED)
@@ -120,12 +119,8 @@ async def upload_prova(
         raise HTTPException(status_code=403, detail="Sem permissao")
 
     ext = os.path.splitext(arquivo.filename or "img.jpg")[1].lower()
-    if ext not in EXTENSOES_PERMITIDAS:
-        raise HTTPException(status_code=400, detail="Tipo de arquivo nao permitido. Use: jpg, png ou webp")
-
     conteudo = await arquivo.read()
-    if len(conteudo) > MAX_TAMANHO_ARQUIVO:
-        raise HTTPException(status_code=413, detail="Arquivo muito grande. Maximo: 5MB")
+    validar_imagem(conteudo, ext)
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     nome = f"prova_{uuid.uuid4().hex}{ext}"

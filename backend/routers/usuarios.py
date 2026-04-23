@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from core.security import hash_senha, verificar_senha, criar_token
 from core.deps import get_current_user
+from core.rate_limit import limiter
 from models.usuario import Usuario
 from models.denuncia import Denuncia
 from models.resgate import Resgate
@@ -37,7 +38,12 @@ async def registrar(dados: UsuarioCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def login(
+    request: Request,
+    form: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(Usuario).where(Usuario.email == form.username))
     usuario = result.scalar_one_or_none()
 
