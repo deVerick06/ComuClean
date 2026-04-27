@@ -2,8 +2,7 @@ from fastapi import HTTPException
 
 
 EXTENSOES_PERMITIDAS = {".jpg", ".jpeg", ".png", ".webp"}
-MAX_TAMANHO_ARQUIVO = 5 * 1024 * 1024
-
+MAX_TAMANHO_ARQUIVO = 20 * 1024 * 1024
 
 def _is_jpeg(b: bytes) -> bool:
     return len(b) >= 3 and b[:3] == b"\xff\xd8\xff"
@@ -19,7 +18,7 @@ def _is_webp(b: bytes) -> bool:
 
 def validar_imagem(conteudo: bytes, extensao: str) -> None:
     if len(conteudo) > MAX_TAMANHO_ARQUIVO:
-        raise HTTPException(status_code=413, detail="Arquivo muito grande. Maximo: 5MB")
+        raise HTTPException(status_code=413, detail="Arquivo muito grande. Maximo: 20MB")
 
     ext = extensao.lower()
     if ext not in EXTENSOES_PERMITIDAS:

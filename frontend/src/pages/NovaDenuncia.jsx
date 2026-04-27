@@ -42,24 +42,30 @@ export default function NovaDenuncia() {
   }
 
   async function handleSubmit() {
-    if (!tipo || !coords) return;
+    // Adicionei a validação da foto aqui também, já que no novo backend 
+    // a foto (arquivo) é um campo obrigatório para criar a denúncia.
+    if (!tipo || !coords || !foto) {
+        setErro('Por favor, preencha os dados e adicione uma foto.');
+        return;
+    }
 
     setLoading(true);
     setErro('');
 
     try {
-      const { data: denuncia } = await api.post('/denuncias', {
-        tipo_lixo: tipo,
-        latitude: coords.lat,
-        longitude: coords.lng,
-        descricao: descricao || null,
-      });
-
-      if (foto) {
-        const formData = new FormData();
-        formData.append('arquivo', foto);
-        await api.post(`/denuncias/${denuncia.id}/imagens`, formData);
+      const formData = new FormData();
+      
+      formData.append('tipo_lixo', tipo);
+      formData.append('latitude', coords.lat);
+      formData.append('longitude', coords.lng);
+      
+      if (descricao) {
+        formData.append('descricao', descricao);
       }
+
+      // 3. Adicionamos o arquivo da foto no mesmo pacote
+      formData.append('arquivo', foto);
+      await api.post('/denuncias', formData);
 
       navigate('/');
     } catch (err) {
